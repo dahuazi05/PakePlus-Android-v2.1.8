@@ -1,11 +1,190 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乖乖的专属小助手</title>
+    <style>
+        :root {
+            --primary-pink: #ffafcc;
+            --deep-pink: #ff8fab;
+            --soft-blue: #a2d2ff;
+        }
+
+        body {
+            font-family: 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, #fef1f5 0%, #e0c3fc 100%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            width: 90%;
+            max-width: 360px;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        h1 { font-size: 1.6rem; color: var(--deep-pink); margin-bottom: 20px; }
+
+        .card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 1px solid white;
+        }
+
+        .next-date {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: #ff4d6d;
+            margin: 10px 0;
+        }
+
+        input[type="date"] {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--primary-pink);
+            width: 85%;
+            margin-bottom: 15px;
+            outline: none;
+            background: white;
+        }
+
+        button {
+            background: linear-gradient(to right, var(--primary-pink), var(--deep-pink));
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            box-shadow: 0 5px 15px rgba(255, 143, 171, 0.4);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        .tips-box {
+            background: rgba(162, 210, 255, 0.2);
+            border-left: 4px solid var(--soft-blue);
+            padding: 15px;
+            text-align: left;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border-radius: 0 15px 15px 0;
+        }
+
+        .meat-btn {
+            background: linear-gradient(to right, #ffb703, #fb8500);
+            margin-top: 20px;
+            width: 100%;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(251, 133, 0, 0.3);
+        }
+
+        footer { margin-top: 25px; font-size: 0.75rem; color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎀 乖乖的能量站</h1>
+    
+    <div class="card">
+        <p style="margin-top:0">记录上次时间</p>
+        <input type="date" id="lastDate">
+        <br>
+        <button onclick="calculate()">同步给韩师傅</button>
+    </div>
+
+    <div id="resultBox" style="display: none;">
+        <div class="card">
+            <p style="margin:0">预计下次到访</p>
+            <div class="next-date" id="nextDate">--</div>
+            <p id="daysCount" style="color:var(--deep-pink); font-weight:bold"></p>
+        </div>
+
+        <div class="tips-box" id="hanTips"></div>
+    </div>
+
+    <button class="meat-btn" onclick="askForMeat()">🍖 我想吃肉了！(一键召唤)</button>
+</div>
+<script>
+    // 你的 Pushplus Token
+    const TOKEN = '8629e661e4e5438184a07e288692c990'; 
+
+    window.onload = function() {
+        const savedDate = localStorage.getItem('lastPeriod');
+        if (savedDate) {
+            document.getElementById('lastDate').value = savedDate;
+            calculate();
+        }
+    };
+
+    function calculate() {
+        const lastDateVal = document.getElementById('lastDate').value;
+        if (!lastDateVal) {
+            alert("乖乖，要先选一个日期哦~");
+            return;
+        }
+
+        localStorage.setItem('lastPeriod', lastDateVal);
+        const lastDate = new Date(lastDateVal);
+        const nextDate = new Date(lastDate);
+        nextDate.setDate(lastDate.getDate() + 28);
+
+        document.getElementById('resultBox').style.display = 'block';
+        document.getElementById('nextDate').innerText = nextDate.toLocaleDateString();
+
+        const today = new Date();
+        const diffTime = nextDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        document.getElementById('daysCount').innerText = diffDays > 0 ? `倒计时 ${diffDays} 天` : `就是最近几天啦！`;
+
+        let tip = "";
+        if (diffDays > 23) {
+            tip = "<b>💡 韩师傅提醒：</b> 姨妈刚走，现在是黄金期！想吃肉就吃，心情要美美的。";
+        } else if (diffDays > 10) {
+            tip = "<b>💡 韩师傅提醒：</b> 处于排卵期，可能有点累。多喝温水，别熬夜哦！";
+        } else if (diffDays > 3) {
+            tip = "<b>⚠️ 重点保护期：</b> 还有几天就来了。不许吃冰！韩师傅的外卖随时待命。";
+        } else {
+            tip = "<b>🆘 特级警报：</b> 就是这几天了！我会一直陪着你的，难受就告诉我。";
+        }
+        document.getElementById('hanTips').innerHTML = tip;
+    }
+
+    function askForMeat() {
+        // 使用 https 协议，防止 mixed content 错误
+        const url = `https://www.pushplus.plus/send?token=${TOKEN}&title=${encodeURIComponent('乖乖想吃肉啦！')}&content=${encodeURIComponent('韩师傅，你的小迷糊在APP里点了一下【我想吃肉】，请迅速投喂！')}&template=html`;
+
+        console.log("正在尝试发送信号...");
+        
+        fetch(url)
+            .then(res => {
+                if(res.ok) {
+                    alert("🍖 信号已穿透云层！韩师傅的手机震动了，坐等肉肉。");
+                } else {
+                    alert("服务器有点小脾气，请稍后再试。");
+                }
+            })
+            .catch(err => {
+                console.error("发送失败:", err);
+                alert("信号塔打盹了（网络错误），快去微信直接轰炸韩师傅！");
+            });
+    }
+</script>
+</body>
 </html>
